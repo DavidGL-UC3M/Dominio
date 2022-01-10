@@ -7,11 +7,11 @@ for i in range(rows):
     for j in range(columns):
         string += f"t{i}{j} "
 
-string += "- tile\n"
+string += "- tile\n\n"
 
 for i in range(rows):
     for j in range(columns):
-        string += f"(= (x t{i}{j}) {i})\n(= (y t{i}{j}) {j})\n"
+        string += f"(= (x t{i}{j}) {i}) (= (y t{i}{j}) {j})"
         
 with open(outputFile, "w") as f:
 
