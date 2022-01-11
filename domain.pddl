@@ -8,7 +8,7 @@
 		player enemy - entity
 		; Tipos de entidades
 		mage barbarian ranger cleric - player
-		orc goblin skeleton_warrior skeleton_archer - enemy
+		melee_enemy ranged_enemy - enemy
 	)
 	(:predicates
 		(on ?e - entity ?t - tile)
@@ -330,6 +330,18 @@
 	;
 	; TERMINAR TURNO
 	;
+	(:action end_turn_enemy;
+		:parameters (?e - enemy)
+		:precondition (and
+			(= (initiative ?e) (turn))
+			(= (action ?e) 0)
+		)
+		:effect (and
+			(decrease (turn) 1)
+			(assign (movement ?e) (base_movement ?e))
+			(assign (action ?e) (base_action ?e))
+		)
+	)
 	(:action end_turn;
 		:parameters (?e - player)
 		:precondition (= (initiative ?e) (turn))
@@ -346,10 +358,10 @@
 
 	)
 	;
-	; GOBLIN
+	;  Ranged enemy
 	;
 	(:action move
-		:parameters (?e1 - goblin ?t1 ?t2 - tile)
+		:parameters (?e1 - ranged_enemy ?t1 ?t2 - tile)
 		:precondition (and
 			(> (hp ?e1) 0)
 			(= (initiative ?e1) (turn))
@@ -380,8 +392,7 @@
 							)
 						)
 					)
-				
-					)
+				)
 			)
 		)
 		:effect (and
@@ -390,20 +401,9 @@
 			(on ?e1 ?t2)
 		)
 	)
-	(:action end_turn_goblin;
-		:parameters (?e - goblin)
-		:precondition (and
-			(= (initiative ?e) (turn))
-			(= (action ?e) 0)
-		)
-		:effect (and
-			(decrease (turn) 1)
-			(assign (movement ?e) (base_movement ?e))
-			(assign (action ?e) (base_action ?e))
-		)
-	)
-	(:action ranged_attack_goblin
-		:parameters (?e1 - goblin ?e2 - player ?w - rangedw ?t1 ?t2 - tile ?a - armor)
+
+	(:action ranged_attack_enemy
+		:parameters (?e1 - ranged_enemy ?e2 - player ?w - rangedw ?t1 ?t2 - tile ?a - armor)
 		:precondition (and
 			(> (hp ?e1) 0)
 			(= (initiative ?e1) (turn))
@@ -428,8 +428,8 @@
 			(decrease (hp_lost) (- (damage ?w) (protection ?a)))
 		)
 	)
-	(:action ranged_attack_goblin_no_armor
-		:parameters (?e1 - goblin ?e2 - player ?w - rangedw ?t1 ?t2 - tile)
+	(:action ranged_attack_enemy_no_armor
+		:parameters (?e1 - ranged_enemy ?e2 - player ?w - rangedw ?t1 ?t2 - tile)
 		:precondition (and
 			(> (hp ?e1) 0)
 			(= (initiative ?e1) (turn))
@@ -455,10 +455,10 @@
 		)
 	)
 	;
+	; Melee enemy
 	;
-	;
-	(:action move_orc
-		:parameters (?e1 - orc ?t1 ?t2 - tile)
+	(:action move_melee_enemy
+		:parameters (?e1 - melee_enemy ?t1 ?t2 - tile)
 		:precondition (and
 			(> (hp ?e1) 0)
 			(= (initiative ?e1) (turn))
@@ -469,6 +469,26 @@
 			(on ?e1 ?t1)
 			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
 			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+      (forall
+				(?p - player)
+				(exists (?tp - tile)
+					(and
+						(on ?p ?tp)
+						(or
+							(and 
+								(> (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
+								(= (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
+							
+							)
+							(and 
+								(= (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
+								(> (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
+							
+							)
+						)
+					)
+				)
+			)
 		)
 		:effect (and
 			(decrease (movement ?e1) 1)
@@ -476,20 +496,9 @@
 			(on ?e1 ?t2)
 		)
 	)
-	(:action end_turn_orc;
-		:parameters (?e - orc)
-		:precondition (and
-			(= (initiative ?e) (turn))
-			(= (action ?e) 0)
-		)
-		:effect (and
-			(decrease (turn) 1)
-			(assign (movement ?e) (base_movement ?e))
-			(assign (action ?e) (base_action ?e))
-		)
-	)
-	(:action melee_attack_orc
-		:parameters (?p - orc ?e - player ?w - meleew ?t1 ?t2 - tile ?a - armor)
+
+	(:action melee_attack_enemy
+		:parameters (?p - melee_enemy ?e - player ?w - meleew ?t1 ?t2 - tile ?a - armor)
 		:precondition (and
 			(> (hp ?p) 0)
 			(= (initiative ?p) (turn))
@@ -509,8 +518,8 @@
 		)
 	)
 
-	(:action melee_attack_orc_no_armor
-		:parameters (?p - orc ?e - player ?w - meleew ?t1 ?t2 - tile )
+	(:action melee_attack_enemy_no_armor
+		:parameters (?p - melee_enemy ?e - player ?w - meleew ?t1 ?t2 - tile )
 		:precondition (and
 			(> (hp ?p) 0)
 			(= (initiative ?p) (turn))

@@ -2,7 +2,7 @@
 	(:domain dnd)
 	(:objects
 		bob - mage
-		orc - orc
+		orc - melee_enemy
 		club - meleew
 		bow - rangedw
 		leather_armor - armor
