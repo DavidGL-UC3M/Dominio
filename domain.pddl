@@ -454,4 +454,79 @@
 			(decrease (hp_lost) (damage ?w))
 		)
 	)
+	;
+	;
+	;
+	(:action move_orc
+		:parameters (?e1 - orc ?t1 ?t2 - tile)
+		:precondition (and
+			(> (hp ?e1) 0)
+			(= (initiative ?e1) (turn))
+			(> (movement ?e1) 0)
+			(not (exists
+					(?e2 - entity)
+					(on ?e2 ?t2)))
+			(on ?e1 ?t1)
+			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
+			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+		)
+		:effect (and
+			(decrease (movement ?e1) 1)
+			(not (on ?e1 ?t1))
+			(on ?e1 ?t2)
+		)
+	)
+	(:action end_turn_orc;
+		:parameters (?e - orc)
+		:precondition (and
+			(= (initiative ?e) (turn))
+			(= (action ?e) 0)
+		)
+		:effect (and
+			(decrease (turn) 1)
+			(assign (movement ?e) (base_movement ?e))
+			(assign (action ?e) (base_action ?e))
+		)
+	)
+	(:action melee_attack_orc
+		:parameters (?p - orc ?e - player ?w - meleew ?t1 ?t2 - tile ?a - armor)
+		:precondition (and
+			(> (hp ?p) 0)
+			(= (initiative ?p) (turn))
+			(> (action ?p) 0)
+			(on ?p ?t1)
+			(on ?e ?t2)
+			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
+			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+			(has ?p ?w)
+			(has ?e ?a)
+		)
+
+		:effect (and
+			(decrease (action ?p) 1)
+			(decrease (hp ?e) (- (damage ?w) (protection ?a)))
+			(decrease (hp_lost) (- (damage ?w) (protection ?a)))
+		)
+	)
+
+	(:action melee_attack_orc_no_armor
+		:parameters (?p - orc ?e - player ?w - meleew ?t1 ?t2 - tile )
+		:precondition (and
+			(> (hp ?p) 0)
+			(= (initiative ?p) (turn))
+			(> (action ?p) 0)
+			(on ?p ?t1)
+			(on ?e ?t2)
+			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
+			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+			(has ?p ?w)
+			(not (exists (?a - armor) (has ?e ?a)))
+		)
+
+		:effect (and
+			(decrease (action ?p) 1)
+			(decrease (hp ?e) (damage ?w))
+			(decrease (hp_lost) (damage ?w))
+		)
+	)
 )
