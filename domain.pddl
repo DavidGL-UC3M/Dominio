@@ -187,22 +187,25 @@
 			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
 			; tile is further away in at least one coordinate to all players
 			(forall
-				(?tp - tile)
-				(and
-					(exists (?p - player) (on ?p ?tp))
-					(or
-						(and 
-							(< (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
-							(= (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
-						
-						)
-						(and 
-							(= (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
-							(< (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
-						
+				(?p - player)
+				(exists (?tp - tile)
+					(and
+						(on ?p ?tp)
+						(or
+							(and 
+								(< (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
+								(= (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
+							
+							)
+							(and 
+								(= (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
+								(< (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
+							
+							)
 						)
 					)
-				)
+				
+					)
 			)
 		)
 		:effect (and
