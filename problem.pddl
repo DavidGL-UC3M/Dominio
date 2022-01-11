@@ -42,5 +42,5 @@
 	(:goal
 		(<= (hp g) 0)
 	)
-	(:metric maximize (hp_lost))
+	(:metric minimize (hp_lost))
 )

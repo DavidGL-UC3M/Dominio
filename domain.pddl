@@ -39,7 +39,7 @@
 	; MOVIMIENTO
 	;
 	(:action move
-		:parameters (?e1 - entity ?t1 ?t2 - tile)
+		:parameters (?e1 - player ?t1 ?t2 - tile)
 		:precondition (and
 			(> (hp ?e1) 0)
 			(= (initiative ?e1) (turn))
@@ -172,6 +172,45 @@
 	;
 	; GOBLIN
 	;
+	(:action move
+		:parameters (?e1 - goblin ?t1 ?t2 - tile)
+		:precondition (and
+			(> (hp ?e1) 0)
+			(= (initiative ?e1) (turn))
+			(> (movement ?e1) 0)
+			(not (exists
+					(?e2 - entity)
+					(on ?e2 ?t2)))
+			(on ?e1 ?t1)
+			; tile is within 1 position in x and y
+			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
+			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+			; tile is further away in at least one coordinate to all players
+			(forall
+				(?tp - tile)
+				(and
+					(exists (?p - player) (on ?p ?tp))
+					(or
+						(and 
+							(< (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
+							(= (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
+						
+						)
+						(and 
+							(= (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
+							(< (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
+						
+						)
+					)
+				)
+			)
+		)
+		:effect (and
+			(decrease (movement ?e1) 1)
+			(not (on ?e1 ?t1))
+			(on ?e1 ?t2)
+		)
+	)
 	(:action end_turn_goblin;
 		:parameters (?e - goblin)
 		:precondition (and
