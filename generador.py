@@ -1,4 +1,4 @@
-rows, columns = 10, 10
+rows, columns = 4, 4
 
 outputFile = "salida.txt"
 

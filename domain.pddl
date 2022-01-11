@@ -1,5 +1,5 @@
 (define (domain dnd)
-	(:requirements :typing :fluents :negative-preconditions :disjunctive-preconditions :action-costs)
+	(:requirements :typing :fluents :negative-preconditions :disjunctive-preconditions)
 	(:types
 		tile entity equipment - object
 		; tipo de equipamiento
@@ -16,7 +16,7 @@
 		(last_hit ?e - enemy ?p - player)
 	)
 	(:functions
-		(hp_lost)
+		(total-cost)
 		(turn)
 		(max_turn)
 		(x ?t - tile)
@@ -53,8 +53,24 @@
 			(decrease (movement ?e1) 1)
 			(not (on ?e1 ?t1))
 			(on ?e1 ?t2)
+			(increase (total-cost) 1)
 		)
 	)
+
+	  (:action dash
+		:parameters (?e1 - player)
+		:precondition (and
+			(> (hp ?e1) 0)
+			(= (initiative ?e1) (turn))
+			(> (action ?e1) 0)
+		)
+		:effect (and
+			(decrease (action ?e1) 1)
+			(increase (movement ?e1) (base_movement ?e1))
+			(increase (total-cost) 1)
+		)
+	)
+
 	;
 	; Magia
 	;
@@ -75,7 +91,7 @@
 			(decrease (action ?e1) 1)
 			(decrease (mana ?e1) 1)
 			(increase (hp ?e2) 12)
-			(increase (hp_lost) 12)
+			(decrease (total-cost) 11)
 		)
 	)
 	(:action Magic_Missile
@@ -115,6 +131,7 @@
 			(decrease (hp ?e1) 3)
 			(decrease (hp ?e2) 3)
 			(decrease (hp ?e3) 3)
+			(increase (total-cost) 1)
 		)
 	)
 	(:action Fire_bolt
@@ -137,6 +154,7 @@
 		:effect (and
 			(decrease (action ?p) 1)
 			(decrease (hp ?e1) (- (protection ?a) 5))
+			(increase (total-cost) 1)
 		)
 	)
 	(:action Fire_bolt_no_armor
@@ -159,6 +177,7 @@
 		:effect (and
 			(decrease (action ?p) 1)
 			(decrease (hp ?e1)  5)
+			(increase (total-cost) 1)
 		)
 	)
 	(:action Shocking_grasp
@@ -176,6 +195,7 @@
 		:effect (and
 			(decrease (action ?p) 1)
 			(decrease (hp ?e1)  4)
+			(increase (total-cost) 1)
 		)
 	)
 	;
@@ -201,6 +221,7 @@
 				(?p2 - player)
 				(not (last_hit ?e ?p2)))
 			(last_hit ?e ?p)
+			(increase (total-cost) 1)
 		)
 	)
 
@@ -222,6 +243,7 @@
 				(?p2 - player)
 				(not (last_hit ?e ?p2)))
 			(last_hit ?e ?p)
+			(increase (total-cost) 1)
 		)
 	)
 
@@ -246,6 +268,7 @@
 				(?p2 - player)
 				(not (last_hit ?e ?p2)))
 			(last_hit ?e ?p)
+			(increase (total-cost) 1)
 		)
 	)
 
@@ -270,6 +293,7 @@
 				(?p2 - player)
 				(not (last_hit ?e ?p2)))
 			(last_hit ?e ?p)
+			(increase (total-cost) 1)
 		)
 	)
 
@@ -297,6 +321,7 @@
 				(?p2 - player)
 				(not (last_hit ?e ?p2)))
 			(last_hit ?e ?p)
+			(increase (total-cost) 1)
 		)
 	)
 
@@ -325,6 +350,7 @@
 				(?p2 - player)
 				(not (last_hit ?e ?p2)))
 			(last_hit ?e ?p)
+			(increase (total-cost) 1)
 		)
 	)
 	;
@@ -340,6 +366,7 @@
 			(decrease (turn) 1)
 			(assign (movement ?e) (base_movement ?e))
 			(assign (action ?e) (base_action ?e))
+			(increase (total-cost) 1)
 		)
 	)
 	(:action end_turn;
@@ -349,13 +376,16 @@
 			(decrease (turn) 1)
 			(assign (movement ?e) (base_movement ?e))
 			(assign (action ?e) (base_action ?e))
+			(increase (total-cost) 1)
 		)
 	)
 	(:action end_round;
 		:parameters ()
 		:precondition (= (turn) 0)
-		:effect (assign (turn) (max_turn))
-
+		:effect (and
+			(assign (turn) (max_turn))
+			(increase (total-cost) 1)			
+			)
 	)
 	;
 	;  Ranged enemy
@@ -399,6 +429,7 @@
 			(decrease (movement ?e1) 1)
 			(not (on ?e1 ?t1))
 			(on ?e1 ?t2)
+			(increase (total-cost) 1)
 		)
 	)
 
@@ -425,7 +456,8 @@
 		:effect (and
 			(decrease (action ?e1) 1)
 			(decrease (hp ?e2) (- (damage ?w) (protection ?a)))
-			(decrease (hp_lost) (- (damage ?w) (protection ?a)))
+			(increase (total-cost) (- (damage ?w) (protection ?a)))
+			(increase (total-cost) 1)
 		)
 	)
 	(:action ranged_attack_enemy_no_armor
@@ -451,7 +483,8 @@
 		:effect (and
 			(decrease (action ?e1) 1)
 			(decrease (hp ?e2) (damage ?w))
-			(decrease (hp_lost) (damage ?w))
+			(increase (total-cost) (damage ?w))
+			(increase (total-cost) 1)
 		)
 	)
 	;
@@ -494,6 +527,7 @@
 			(decrease (movement ?e1) 1)
 			(not (on ?e1 ?t1))
 			(on ?e1 ?t2)
+			(increase (total-cost) 1)
 		)
 	)
 
@@ -514,7 +548,8 @@
 		:effect (and
 			(decrease (action ?p) 1)
 			(decrease (hp ?e) (- (damage ?w) (protection ?a)))
-			(decrease (hp_lost) (- (damage ?w) (protection ?a)))
+			(increase (total-cost) (- (damage ?w) (protection ?a)))
+			(increase (total-cost) 1)
 		)
 	)
 
@@ -535,7 +570,8 @@
 		:effect (and
 			(decrease (action ?p) 1)
 			(decrease (hp ?e) (damage ?w))
-			(decrease (hp_lost) (damage ?w))
+			(increase  (total-cost) (damage ?w))
+			(increase (total-cost) 1)
 		)
 	)
 )
