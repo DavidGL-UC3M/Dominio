@@ -3,8 +3,7 @@
 	(:types
 		tile entity equipment - object
 		; tipo de equipamiento
-		;weapon armor - equipment
-		weapon - equipment
+		weapon armor - equipment
 		meleew rangedw - weapon
 		player enemy - entity
 		; Tipos de entidades
@@ -30,9 +29,8 @@
 		(base_action ?e - entity)
 		(mana ?p - player)
 		(damage ?w - weapon)
-		(ammo ?w - rangedw)
 		(effective_range ?rw - rangedw)
-		;(protection ?a - armor)
+		(protection ?a - armor)
 	)
 
 	;
@@ -58,7 +56,7 @@
 		)
 	)
 	;
-	; acciones
+	; Magia
 	;
 	(:action heal
 		:parameters (?e1 - cleric ?e2 - player ?t1 ?t2 - tile)
@@ -66,6 +64,7 @@
 			(> (hp ?e1) 0)
 			(= (initiative ?e1) (turn))
 			(> (action ?e1) 0)
+			(> (mana ?e1) 0)
 			(on ?e1 ?t1)
 			(on ?e2 ?t2)
 			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
@@ -79,6 +78,132 @@
 			(increase (hp_lost) 12)
 		)
 	)
+	(:action Magic_Missile
+		:parameters (?p - mage ?e1 ?e2 ?e3 - enemy ?t1 ?t2 ?t3 ?t4 - tile)
+		:precondition (and
+			(> (hp ?p) 0)
+			(= (initiative ?p) (turn))
+			(> (action ?p) 0)
+			(> (mana ?p) 0)
+			(on ?p ?t1)
+			(on ?e1 ?t2)
+			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 576)
+			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 576)
+			(on ?e2 ?t3)
+			(<= (* (- (x ?t1) (x ?t3)) (- (x ?t1) (x ?t3))) 576)
+			(<= (* (- (y ?t1) (y ?t3)) (- (y ?t1) (y ?t3))) 576)
+			(on ?e3 ?t4)
+			(<= (* (- (x ?t1) (x ?t4)) (- (x ?t1) (x ?t4))) 576)
+			(<= (* (- (y ?t1) (y ?t4)) (- (y ?t1) (y ?t4))) 576)
+			(or
+				(> (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
+				(> (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+			)
+			(or
+				(> (* (- (x ?t1) (x ?t3)) (- (x ?t1) (x ?t3))) 1)
+				(> (* (- (y ?t1) (y ?t3)) (- (y ?t1) (y ?t3))) 1)
+			)			
+			(or
+				(> (* (- (x ?t1) (x ?t4)) (- (x ?t1) (x ?t4))) 1)
+				(> (* (- (y ?t1) (y ?t4)) (- (y ?t1) (y ?t4))) 1)
+			)
+		)
+
+		:effect (and
+			(decrease (action ?p) 1)
+			(decrease (mana ?p) 1)
+			(decrease (hp ?e1) 3)
+			(decrease (hp ?e2) 3)
+			(decrease (hp ?e3) 3)
+		)
+	)
+	(:action Fire_bolt
+		:parameters (?p - mage ?e1 - enemy ?t1 ?t2 - tile ?a - armor)
+		:precondition (and
+			(> (hp ?p) 0)
+			(= (initiative ?p) (turn))
+			(> (action ?p) 0)
+			(on ?p ?t1)
+			(on ?e1 ?t2)
+			(has ?e1 ?a)
+			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 576)
+			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 576)
+			(or
+				(> (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
+				(> (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+			)
+		)
+
+		:effect (and
+			(decrease (action ?p) 1)
+			(decrease (hp ?e1) (- (protection ?a) 5))
+		)
+	)
+	(:action Fire_bolt_no_armor
+		:parameters (?p - mage ?e1 - enemy ?t1 ?t2 - tile)
+		:precondition (and
+			(> (hp ?p) 0)
+			(= (initiative ?p) (turn))
+			(> (action ?p) 0)
+			(on ?p ?t1)
+			(on ?e1 ?t2)	
+			(not (exists (?a - armor) (has ?e1 ?a)))
+			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 576)
+			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 576)
+			(or
+				(> (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
+				(> (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+			)
+		)
+
+		:effect (and
+			(decrease (action ?p) 1)
+			(decrease (hp ?e1)  5)
+		)
+	)
+	(:action Shocking_grasp
+		:parameters (?p - mage ?e1 - enemy ?t1 ?t2 - tile)
+		:precondition (and
+			(> (hp ?p) 0)
+			(= (initiative ?p) (turn))
+			(> (action ?p) 0)
+			(on ?p ?t1)
+			(on ?e1 ?t2)	
+			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
+			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+		)
+
+		:effect (and
+			(decrease (action ?p) 1)
+			(decrease (hp ?e1)  4)
+		)
+	)
+	;
+	; ataques
+	;
+	(:action unnarmed_attack_no_armor
+		:parameters (?p - player ?e - enemy ?t1 ?t2 - tile)
+		:precondition (and
+			(> (hp ?p) 0)
+			(= (initiative ?p) (turn))
+			(> (action ?p) 0)
+			(on ?p ?t1)
+			(on ?e ?t2)
+			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
+			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+			(not (exists (?a - armor) (has ?e ?a)))
+		)
+
+		:effect (and
+			(decrease (action ?p) 1)
+			(decrease (hp ?e) 1)
+			(forall
+				(?p2 - player)
+				(not (last_hit ?e ?p2)))
+			(last_hit ?e ?p)
+		)
+	)
+
 	(:action unnarmed_attack
 		:parameters (?p - player ?e - enemy ?t1 ?t2 - tile)
 		:precondition (and
@@ -93,7 +218,6 @@
 
 		:effect (and
 			(decrease (action ?p) 1)
-			(decrease (hp ?e) 1)
 			(forall
 				(?p2 - player)
 				(not (last_hit ?e ?p2)))
@@ -102,7 +226,7 @@
 	)
 
 	(:action melee_attack
-		:parameters (?p - player ?e - enemy ?w - meleew ?t1 ?t2 - tile)
+		:parameters (?p - player ?e - enemy ?w - meleew ?t1 ?t2 - tile ?a - armor)
 		:precondition (and
 			(> (hp ?p) 0)
 			(= (initiative ?p) (turn))
@@ -112,6 +236,31 @@
 			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
 			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
 			(has ?p ?w)
+			(has ?e ?a)
+		)
+
+		:effect (and
+			(decrease (action ?p) 1)
+			(decrease (hp ?e) (- (damage ?w) (protection ?a)))
+			(forall
+				(?p2 - player)
+				(not (last_hit ?e ?p2)))
+			(last_hit ?e ?p)
+		)
+	)
+
+	(:action melee_attack_no_armor
+		:parameters (?p - player ?e - enemy ?w - meleew ?t1 ?t2 - tile )
+		:precondition (and
+			(> (hp ?p) 0)
+			(= (initiative ?p) (turn))
+			(> (action ?p) 0)
+			(on ?p ?t1)
+			(on ?e ?t2)
+			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
+			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+			(has ?p ?w)
+			(not (exists (?a - armor) (has ?e ?a)))
 		)
 
 		:effect (and
@@ -123,13 +272,13 @@
 			(last_hit ?e ?p)
 		)
 	)
+
 	(:action ranged_attack
-		:parameters (?p - player ?e - enemy ?w - rangedw ?t1 ?t2 - tile)
+		:parameters (?p - player ?e - enemy ?w - rangedw ?t1 ?t2 - tile ?a - armor)
 		:precondition (and
 			(> (hp ?p) 0)
 			(= (initiative ?p) (turn))
 			(> (action ?p) 0)
-			(> (ammo ?w) 0)
 			(on ?p ?t1)
 			(on ?e ?t2)
 			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) (* (effective_range ?w) (effective_range ?w)))
@@ -143,7 +292,34 @@
 
 		:effect (and
 			(decrease (action ?p) 1)
-			(decrease (ammo ?w) 1)
+			(decrease (hp ?e) (- (damage ?w) (protection ?a)))
+			(forall
+				(?p2 - player)
+				(not (last_hit ?e ?p2)))
+			(last_hit ?e ?p)
+		)
+	)
+
+	(:action ranged_attack_no_armor
+		:parameters (?p - player ?e - enemy ?w - rangedw ?t1 ?t2 - tile)
+		:precondition (and
+			(> (hp ?p) 0)
+			(= (initiative ?p) (turn))
+			(> (action ?p) 0)
+			(on ?p ?t1)
+			(on ?e ?t2)
+			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) (* (effective_range ?w) (effective_range ?w)))
+			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) (* (effective_range ?w) (effective_range ?w)))
+			(or
+				(> (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
+				(> (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+			)
+			(has ?p ?w)
+			(not (exists (?a - armor) (has ?e ?a)))
+		)
+
+		:effect (and
+			(decrease (action ?p) 1)
 			(decrease (hp ?e) (damage ?w))
 			(forall
 				(?p2 - player)
@@ -227,6 +403,32 @@
 		)
 	)
 	(:action ranged_attack_goblin
+		:parameters (?e1 - goblin ?e2 - player ?w - rangedw ?t1 ?t2 - tile ?a - armor)
+		:precondition (and
+			(> (hp ?e1) 0)
+			(= (initiative ?e1) (turn))
+			(> (action ?e1) 0)
+			(last_hit ?e1 ?e2)
+
+			(on ?e1 ?t1)
+			(on ?e2 ?t2)
+			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) (* (effective_range ?w) (effective_range ?w)))
+			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) (* (effective_range ?w) (effective_range ?w)))
+			(or
+				(> (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
+				(> (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+			)
+			(has ?e1 ?w)
+			(has ?e2 ?a)
+		)
+
+		:effect (and
+			(decrease (action ?e1) 1)
+			(decrease (hp ?e2) (- (damage ?w) (protection ?a)))
+			(decrease (hp_lost) (- (damage ?w) (protection ?a)))
+		)
+	)
+	(:action ranged_attack_goblin_no_armor
 		:parameters (?e1 - goblin ?e2 - player ?w - rangedw ?t1 ?t2 - tile)
 		:precondition (and
 			(> (hp ?e1) 0)
@@ -243,6 +445,7 @@
 				(> (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
 			)
 			(has ?e1 ?w)
+			(not (exists (?a - armor) (has ?e2 ?a)))
 		)
 
 		:effect (and
