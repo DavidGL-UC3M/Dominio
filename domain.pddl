@@ -132,6 +132,18 @@
 			(decrease (hp ?e2) 3)
 			(decrease (hp ?e3) 3)
 			(increase (total-cost) 1)
+			(forall
+				(?p2 - player)
+				(not (last_hit ?e1 ?p2)))
+			(last_hit ?e1 ?p)
+			(forall
+				(?p2 - player)
+				(not (last_hit ?e2 ?p2)))
+			(last_hit ?e2 ?p)
+			(forall
+				(?p2 - player)
+				(not (last_hit ?e3 ?p2)))
+			(last_hit ?e3 ?p)
 		)
 	)
 	(:action Fire_bolt
@@ -155,6 +167,10 @@
 			(decrease (action ?p) 1)
 			(decrease (hp ?e1) (- (protection ?a) 5))
 			(increase (total-cost) 1)
+			(forall
+				(?p2 - player)
+				(not (last_hit ?e1 ?p2)))
+			(last_hit ?e1 ?p)
 		)
 	)
 	(:action Fire_bolt_no_armor
@@ -178,6 +194,10 @@
 			(decrease (action ?p) 1)
 			(decrease (hp ?e1)  5)
 			(increase (total-cost) 1)
+			(forall
+				(?p2 - player)
+				(not (last_hit ?e1 ?p2)))
+			(last_hit ?e1 ?p)
 		)
 	)
 	(:action Shocking_grasp
@@ -196,6 +216,10 @@
 			(decrease (action ?p) 1)
 			(decrease (hp ?e1)  4)
 			(increase (total-cost) 1)
+			(forall
+				(?p2 - player)
+				(not (last_hit ?e1 ?p2)))
+			(last_hit ?e1 ?p)
 		)
 	)
 	;
@@ -226,7 +250,7 @@
 	)
 
 	(:action unnarmed_attack
-		:parameters (?p - player ?e - enemy ?t1 ?t2 - tile)
+		:parameters (?p - player ?e - enemy ?t1 ?t2 - tile ?a - armor)
 		:precondition (and
 			(> (hp ?p) 0)
 			(= (initiative ?p) (turn))
@@ -235,6 +259,7 @@
 			(on ?e ?t2)
 			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
 			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+			(has ?e ?a)
 		)
 
 		:effect (and
@@ -390,8 +415,8 @@
 	;
 	;  Ranged enemy
 	;
-	(:action move
-		:parameters (?e1 - ranged_enemy ?t1 ?t2 - tile)
+	(:action move_ranged_enemy
+		:parameters (?e1 - ranged_enemy ?p - player ?t1 ?t2 - tile)
 		:precondition (and
 			(> (hp ?e1) 0)
 			(= (initiative ?e1) (turn))
@@ -403,23 +428,22 @@
 			; tile is within 1 position in x and y
 			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
 			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
+			(last_hit ?e1 ?p)
 			; tile is further away in at least one coordinate to all players
-			(forall
-				(?p - player)
-				(exists (?tp - tile)
-					(and
-						(on ?p ?tp)
-						(or
-							(and 
-								(< (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
-								(= (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
-							
-							)
-							(and 
-								(= (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
-								(< (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
-							
-							)
+
+			(exists (?tp - tile)
+				(and
+					(on ?p ?tp)
+					(or
+						(and 
+							(< (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
+							(= (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
+						
+						)
+						(and 
+							(= (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
+							(< (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
+						
 						)
 					)
 				)
@@ -491,7 +515,7 @@
 	; Melee enemy
 	;
 	(:action move_melee_enemy
-		:parameters (?e1 - melee_enemy ?t1 ?t2 - tile)
+		:parameters (?e1 - melee_enemy ?p - player ?t1 ?t2 - tile)
 		:precondition (and
 			(> (hp ?e1) 0)
 			(= (initiative ?e1) (turn))
@@ -502,22 +526,22 @@
 			(on ?e1 ?t1)
 			(<= (* (- (x ?t1) (x ?t2)) (- (x ?t1) (x ?t2))) 1)
 			(<= (* (- (y ?t1) (y ?t2)) (- (y ?t1) (y ?t2))) 1)
-      (forall
-				(?p - player)
-				(exists (?tp - tile)
-					(and
-						(on ?p ?tp)
-						(or
-							(and 
-								(> (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
-								(= (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
-							
-							)
-							(and 
-								(= (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
-								(> (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
-							
-							)
+			(last_hit ?e1 ?p)
+			; tile is further away in at least one coordinate to all players
+
+			(exists (?tp - tile)
+				(and
+					(on ?p ?tp)
+					(or
+						(and 
+							(> (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
+							(= (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
+						
+						)
+						(and 
+							(= (* (- (x ?t1) (x ?tp)) (- (x ?t1) (x ?tp))) (* (- (x ?t2) (x ?tp)) (- (x ?t2) (x ?tp))))
+							(> (* (- (y ?t1) (y ?tp)) (- (y ?t1) (y ?tp))) (* (- (y ?t2) (y ?tp)) (- (y ?t2) (y ?tp))))
+						
 						)
 					)
 				)
