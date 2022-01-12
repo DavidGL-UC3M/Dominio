@@ -7,7 +7,7 @@
 		meleew rangedw - weapon
 		player enemy - entity
 		; Tipos de entidades
-		mage barbarian ranger cleric - player
+		mage cleric - player
 		melee_enemy ranged_enemy - enemy
 	)
 	(:predicates
