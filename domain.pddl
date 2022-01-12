@@ -42,15 +42,12 @@
 			(> (hp ?e1) 0)
 			(= (initiative ?e1) (turn))
 			(> (movement ?e1) 0)
-			(or
-				(not (exists
-						(?e2 - entity)
-						(on ?e2 ?t2)))
-				(forall (?e2 - entity)
-						(and 
-							(on ?e2 ?t2) 
-							(<= (hp ?e2) 0)
-						)
+			(not (exists
+					(?e2 - entity)
+					(or
+						(on ?e2 ?t2)
+						(> (hp ?e2) 0)
+					)
 				)
 			)
 			(on ?e1 ?t1)
