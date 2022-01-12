@@ -27,7 +27,7 @@
 		(= (x t00) 0) (= (y t00) 0)(= (x t01) 0) (= (y t01) 1)(= (x t02) 0) (= (y t02) 2)(= (x t10) 1) (= (y t10) 0)(= (x t11) 1) (= (y t11) 1)(= (x t12) 1) (= (y t12) 2)(= (x t20) 2) (= (y t20) 0)(= (x t21) 2) (= (y t21) 1)(= (x t22) 2) (= (y t22) 2)
 		(= (total-cost) 0)
 
-		(= (hp orc) 50)
+		(= (hp orc) 30)
 		(= (initiative orc) 2)
 		(= (action orc) 1)
 		(= (base_action orc) 1)
@@ -38,7 +38,7 @@
 		(has orc medium_armor)	
 		(last_hit orc pedro)
 
-		(= (hp goblin1) 5)
+		(= (hp goblin1) 15)
 		(= (initiative goblin1) 6)
 		(= (action goblin1) 1)
 		(= (base_action goblin1) 1)
@@ -49,7 +49,7 @@
 		(has goblin1 leather_armor)	
 		(last_hit goblin1 pedro)
 
-		(= (hp goblin2) 5)
+		(= (hp goblin2) 15)
 		(= (initiative goblin2) 5)
 		(= (action goblin2) 1)
 		(= (base_action goblin2) 1)
